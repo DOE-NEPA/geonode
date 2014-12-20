@@ -1,0 +1,15 @@
+{% verbatim %}
+<article ng-repeat="icon in results" ng-cloak class="ng-cloak">
+  <div class="row">
+    <div ng-if="icon.logo != ''" class="col-md-3">
+      <a href="{{ icon.detail_url }}" ><img ng-src="{{ icon.file }}" alt="{{ icon.title }}" class="icon-logo" /></a>
+    </div>
+    <div class="col-md-9">
+      <h5>
+        <i class="fa fa-icon"></i> <a href="{{ icon.detail_url }}">{{ icon.title }}</a>
+      </h5>
+      <p>{{ icon.description}}</p>
+    </div>
+  </div>
+</article>
+{% endverbatim %}

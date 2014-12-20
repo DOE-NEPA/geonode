@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
     {% block head %}
       {% if DEBUG_STATIC %}
@@ -26,7 +26,7 @@
       <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
   </head>
-  
+
   <body class="{% block body_class %}{% endblock %}">
 
     {% block header %}
@@ -58,6 +58,9 @@
             </li>
             <li id="nav_groups">
               <a href="{% url "group_list" %}">{% trans "Groups" %}</a>
+            </li>
+            <li id="nav_icons">
+              <a href="{% url "icon_list" %}">{% trans "Icons" %}</a>
             </li>
             {% endblock %}
           </ul>
@@ -120,7 +123,7 @@
               </ul>
               {% else %}
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                {% trans "Sign in" %} 
+                {% trans "Sign in" %}
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu" role="menu">
@@ -171,7 +174,7 @@
     </div>
     {% endblock middle %}
   </div>
-    
+
     {% block footer %}
     <footer class="footer">
       <div class="container">
@@ -201,7 +204,7 @@
       </div>
     </footer>
     {% endblock footer %}
-    
+
     {% if DEBUG_STATIC %}
     <script src="{{ STATIC_URL }}lib/js/jquery.min.js"></script>
     <script src="{{ STATIC_URL }}lib/js/jquery.dataTables.js"></script>

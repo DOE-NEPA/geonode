@@ -84,6 +84,8 @@ def ajax_lookup(request):
                                             Q(organization__contains=keyword))
     groups = GroupProfile.objects.filter(Q(title__startswith=keyword) |
                                          Q(description__contains=keyword))
+    icons = IconProfile.objects.filter(Q(title__startswith=keyword) |
+                                         Q(description__contains=keyword))
     json_dict = {
         'users': [({'username': u.username}) for u in users],
         'count': users.count(),

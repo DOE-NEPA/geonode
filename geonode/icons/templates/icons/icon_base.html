@@ -1,0 +1,24 @@
+{% extends "site_base.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block title %} {{ block.super }} {% endblock %}
+
+{% block body_class %}icons explore{% endblock %}
+
+{% block body_outer %}
+  <!-- {% block subnav %}
+  <div class="col-md-12">
+    <ul class="nav nav-tabs" id="subnav-tabs">
+      <li><a href="{% url "icon_list" %}" class="explore">{% trans "Explore Icons" %}</a></li>
+      <li><a href="{% url "icon_create" %}" class="create">{% trans "Upload Icons" %}</a></li>
+      #{% if group %}
+      <li><a href="{% url "icon_update" icon.slug %}" class="update">{% trans "Update Icon" %}</a></li>
+      <li><a href="{% url "icon_remove" icon.slug %}" class="remove">{% trans "Remove Icon" %}</a></li>
+      #{% endif %}
+    </ul>
+  </div>
+  {% endblock subnav %} -->
+  {% block body %}{% endblock body %}
+  {% block sidebar %}{% endblock sidebar %}
+{% endblock body_outer %}

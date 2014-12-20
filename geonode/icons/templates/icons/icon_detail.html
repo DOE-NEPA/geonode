@@ -1,0 +1,63 @@
+{% extends "icons/icon_base.html" %}
+{% load i18n %}
+
+{% block title %}{{ object.title|default:object.slug }} — {{ block.super }}{% endblock %}
+
+{% block body_class %}icons{% endblock %}
+
+{% block body_outer %}
+<div class="page-header">
+  <h2 class="page-title">{{ object.title|default:object.slug }}</h2>
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <div class="row">
+      <div class="col-md-3">
+      {% if object.logo %}
+        <img src="{{ object.logo.url }}" alt="{{ object.title }}" class="icon-logo" />
+      {% else %}
+        <p>{% trans "No Icon Uploaded." %}</p>
+      {% endif %}
+      </div>
+      <div class="col-md-9">
+        <p>{{ object.description }}</p>
+        <dl class="dl-horizontal profile-details">
+          <dt><i class="fa fa-tag"></i></dt>
+          <dd>
+          {% if object.keyword_list %}
+            {% for keyword in object.keyword_list %}
+              {{ keyword }}
+            {% endfor %}
+          {% else %}
+          <br>
+          {% endif %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <ul class="list-icon">
+      {% if is_owner %}
+      <li class="list-icon-item"><a href="{% url "icon_update" object.slug %}">{% trans "Edit Icon Details" %}</a></li>
+      <li class="list-icon-item"><a href="{% url "icon_remove" object.slug %}">{% trans "Delete Icon" %}</a></li>
+      {% endif %}
+        <h4>{% trans "Owner" %}</h4>
+        {% for owner in object.get_owner %}
+        _+[]
+        {% endfor %}
+      </li>
+    </ul>
+  </div>
+</div>
+
+{% endblock %}
+#{% block extra_script %}
+  <script type="text/javascript">
+  SEARCH_URL = '{% url 'api_dispatch_list' api_name='api' resource_name='icons' %}'+ '?icon='+ '{{ object.slug }}';
+  </script>
+  {% with include_spatial='false' %}
+  {% include 'search/search_scripts.html' %}
+  {% endwith %}
+{% endblock extra_script %}

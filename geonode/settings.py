@@ -245,6 +245,7 @@ GEONODE_APPS = (
     'geonode.documents',
     'geonode.api',
     'geonode.groups',
+    'geonode.icons',
     'geonode.services',
 
     # GeoNode Contrib Apps
@@ -261,8 +262,8 @@ GEONODE_APPS = (
 INSTALLED_APPS = (
 
     # Boostrap admin theme
-    # 'django_admin_bootstrapped.bootstrap3',
-    # 'django_admin_bootstrapped',
+    #'django_admin_bootstrapped.bootstrap3',
+    #'django_admin_bootstrapped',
 
     # Apps bundled with Django
     'django.contrib.auth',

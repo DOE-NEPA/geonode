@@ -13,6 +13,7 @@ from geonode.layers.models import Layer
 from geonode.maps.models import Map
 from geonode.documents.models import Document
 from geonode.groups.models import GroupProfile
+from geonode.icons.models import IconProfile
 
 from taggit.models import Tag
 
@@ -142,6 +143,23 @@ class GroupResource(ModelResource):
         }
         ordering = ['title', 'last_modified']
 
+class IconResource(ModelResource):
+
+    """Icons api"""
+
+    detail_url = fields.CharField()
+
+    def dehydrate_detail_url(self, bundle):
+        return reverse('icon_detail', args=[bundle.obj.slug])
+
+    class Meta:
+        queryset = IconProfile.objects.all()
+        resource_name = 'icons'
+        allowed_methods = ['get']
+        filtering = {
+            'name': ALL
+        }
+        ordering = ['title', 'last_modified']
 
 class ProfileResource(ModelResource):
 

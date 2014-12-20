@@ -1,0 +1,25 @@
+{% extends "icons/icon_base.html" %}
+{% load i18n %}
+
+{% block title %}{{ icon.title }} {% endblock %}
+{% block body_class %}icons remove{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col-md-8">
+    <form action="{% url "icon_remove" icon.slug %}" method="POST">
+      <h2>
+        {% blocktrans with icon.title as icon_title %}
+          Are you sure you want to remove the group: {{ icon_title }}?
+        {% endblocktrans %}
+      </h2>
+      {% csrf_token %}
+      <input type="hidden" value="{{ icon.slug }}" />
+      <div class="form-actions">
+        <input type="submit" value="{% trans "Yes, I am sure" %}" class="btn btn-danger" />
+        <a href="{% url "icon_detail" icon.slug %}" class="btn btn-info">{% trans "No, don't remove it" %}</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

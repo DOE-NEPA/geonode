@@ -108,10 +108,13 @@ urlpatterns = patterns('',
                        (r'^autocomplete/', include('autocomplete_light.urls')),
                        (r'^admin/', include(admin.site.urls)),
                        (r'^groups/', include('geonode.groups.urls')),
+                       (r'^icons/', include('geonode.icons.urls')),
                        (r'^documents/', include('geonode.documents.urls')),
                        (r'^services/', include('geonode.services.urls')),
                        url(r'', include(api.urls)),
                        )
+
+                    #Third Party Apps
 
 if "geonode.contrib.dynamic" in settings.INSTALLED_APPS:
     urlpatterns += patterns('',
