@@ -5,7 +5,7 @@
 
 var layers = {};
 
-var geogit_stores = {};
+var geogig_stores = {};
 
 define(['underscore',
         'upload/LayerInfo',
@@ -22,7 +22,7 @@ define(['underscore',
         types,
         buildFileInfo,
         displayFiles,
-        init_geogit_stores,
+        init_geogig_stores,
         doUploads,
         doSrs,
         doDelete,
@@ -270,13 +270,13 @@ define(['underscore',
      *
      *  @returns false
      */
-    init_geogit_stores = function() {
+    init_geogig_stores = function() {
         $.ajax({
-            url: '/gs/rest/stores/geogit/',
+            url: '/gs/rest/stores/geogig/',
             async: true,
             contentType: false,
         }).done(function (resp) {
-            geogit_stores = JSON.parse(resp);
+            geogig_stores = JSON.parse(resp);
         }).fail(function (resp) {
             //
         });        
@@ -293,7 +293,9 @@ define(['underscore',
             dropZone = document.querySelector(options.dropZone),
             file_queue = $(options.file_queue),
             doClearState = function () {
-                $("#file-input").replaceWith($("#file-input").clone());
+                // http://stackoverflow.com/questions/1043957/clearing-input-type-file-using-jquery/13351234#13351234
+                $("#file-input").wrap('<form>').closest('form').get(0).reset();
+                $("#file-input").unwrap();
                 // set the global layer object to empty
                 layers = {};
                 // redraw the file display view
@@ -329,8 +331,8 @@ define(['underscore',
         $(options.upload_button).on('click', doUploads);
         $("[id^=delete]").on('click', doDelete);
         $("[id^=resume]").on('click', doResume);
-        if (geogit_enabled) {
-            init_geogit_stores();
+        if (geogig_enabled) {
+            init_geogig_stores();
         }
     };
 

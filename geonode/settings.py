@@ -20,6 +20,8 @@
 
 # Django settings for the GeoNode project.
 import os
+from kombu import Queue
+from celery_app import app  # flake8: noqa
 
 #
 # General Django development settings
@@ -257,6 +259,7 @@ GEONODE_APPS = (
     # it's signals may rely on other apps' signals.
     'geonode.geoserver',
     'geonode.upload',
+    'geonode.tasks'
 )
 
 INSTALLED_APPS = (
@@ -290,6 +293,7 @@ INSTALLED_APPS = (
     'autocomplete_light',
     'mptt',
     'modeltranslation',
+    'djcelery',
 
     # Theme
     "pinax_theme_bootstrap_account",
@@ -301,7 +305,7 @@ INSTALLED_APPS = (
     'avatar',
     'dialogos',
     'agon_ratings',
-    'notification',
+    #'notification',
     'announcements',
     'actstream',
     'user_messages',
@@ -387,6 +391,12 @@ MIDDLEWARE_CLASSES = (
     'pagination.middleware.PaginationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # This middleware allows to print private layers for the users that have 
+    # the permissions to view them.
+    # It sets temporary the involved layers as public before restoring the permissions.
+    # Beware that for few seconds the involved layers are public there could be risks.
+    # 'geonode.middleware.PrintProxyMiddleware',
 )
 
 
@@ -399,6 +409,10 @@ AUTHENTICATION_BACKENDS = (
 
 ANONYMOUS_USER_ID = -1
 GUARDIAN_GET_INIT_ANONYMOUS_USER = 'geonode.people.models.get_anonymous_user_instance'
+
+# Whether the uplaoded resources should be public and downloadable by default or not
+DEFAULT_ANONYMOUS_VIEW_PERMISSION = True
+DEFAULT_ANONYMOUS_DOWNLOAD_PERMISSION = True
 
 #
 # Settings for default search size
@@ -498,7 +512,7 @@ OGC_SERVER = {
         'MAPFISH_PRINT_ENABLED': True,
         'PRINT_NG_ENABLED': True,
         'GEONODE_SECURITY_ENABLED': True,
-        'GEOGIT_ENABLED': False,
+        'GEOGIG_ENABLED': False,
         'WMST_ENABLED': False,
         'BACKEND_WRITE_ENABLED': True,
         'WPS_ENABLED': True,
@@ -513,7 +527,7 @@ UPLOADER = {
     'BACKEND': 'geonode.rest',
     'OPTIONS': {
         'TIME_ENABLED': False,
-        'GEOGIT_ENABLED': False,
+        'GEOGIG_ENABLED': False,
     }
 }
 
@@ -629,6 +643,33 @@ MAP_BASELAYERS = [{
 }]
 
 SOCIAL_BUTTONS = True
+
+SOCIAL_ORIGINS = [{
+    "label":"Email",
+    "url":"mailto:?subject={name}&body={url}",
+    "css_class":"email"
+}, {
+    "label":"Facebook",
+    "url":"http://www.facebook.com/sharer.php?u={url}",
+    "css_class":"fb"
+}, {
+    "label":"Twitter",
+    "url":"https://twitter.com/share?url={url}",
+    "css_class":"tw"
+}, {
+    "label":"Google +",
+    "url":"https://plus.google.com/share?url={url}",
+    "css_class":"gp"
+}]
+
+#CKAN Query String Parameters names pulled from
+#https://github.com/ckan/ckan/blob/2052628c4a450078d58fb26bd6dc239f3cc68c3e/ckan/logic/action/create.py#L43
+CKAN_ORIGINS = [{
+    "label":"Humanitarian Data Exchange (HDX)",
+    "url":"https://data.hdx.rwlabs.org/dataset/new?title={name}&notes={abstract}",
+    "css_class":"hdx"
+}]
+#SOCIAL_ORIGINS.extend(CKAN_ORIGINS)
 
 # Enable Licenses User Interface
 # Regardless of selection, license field stil exists as a field in the Resourcebase model.
@@ -771,6 +812,39 @@ CACHES = {
 
 LAYER_PREVIEW_LIBRARY = 'geoext'
 
+SERVICE_UPDATE_INTERVAL = 0
+
+# Queue non-blocking notifications.
+NOTIFICATION_QUEUE_ALL = False
+
+BROKER_URL = "django://"
+CELERY_ALWAYS_EAGER = True
+CELERY_IGNORE_RESULT = True
+CELERY_SEND_EVENTS = False
+CELERY_RESULT_BACKEND = None
+CELERY_TASK_RESULT_EXPIRES = 1
+CELERY_DISABLE_RATE_LIMITS = True
+CELERY_DEFAULT_QUEUE = "default"
+CELERY_DEFAULT_EXCHANGE = "default"
+CELERY_DEFAULT_EXCHANGE_TYPE = "direct"
+CELERY_DEFAULT_ROUTING_KEY = "default"
+CELERY_CREATE_MISSING_QUEUES = True
+CELERY_IMPORTS = (
+    'geonode.tasks.deletion',
+    'geonode.tasks.update',
+    'geonode.tasks.email'
+)
+
+
+CELERY_QUEUES = [
+    Queue('default', routing_key='default'),
+    Queue('cleanup', routing_key='cleanup'),
+    Queue('update', routing_key='update'),
+    Queue('email', routing_key='email'),
+]
+
+import djcelery
+djcelery.setup_loader()
 
 # Load more settings from a file called local_settings.py if it exists
 try:

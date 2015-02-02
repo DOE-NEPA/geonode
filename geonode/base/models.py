@@ -12,6 +12,7 @@ from django.contrib.staticfiles.templatetags import staticfiles
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
 from django.db.models import signals
+from django.core.files import File
 
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -73,7 +74,7 @@ class TopicCategory(models.Model):
     <CodeListDictionary gml:id="MD_MD_TopicCategoryCode">
     """
     identifier = models.CharField(max_length=255, default='location')
-    description = models.TextField()
+    description = models.TextField(default='')
     gn_description = models.TextField('GeoNode description', default='', null=True)
     is_choice = models.BooleanField(default=True)
 
@@ -146,27 +147,6 @@ class RestrictionCodeType(models.Model):
     class Meta:
         ordering = ("identifier",)
         verbose_name_plural = 'Metadata Restriction Code Types'
-
-
-class Thumbnail(models.Model):
-
-    resourcebase = models.ForeignKey('ResourceBase')
-    thumb_file = models.FileField(upload_to='thumbs')
-    thumb_spec = models.TextField(null=True, blank=True)
-    version = models.PositiveSmallIntegerField(null=True, default=0)
-
-    def _delete_thumb(self):
-        try:
-            self.thumb_file.delete()
-        except OSError:
-            pass
-
-    def delete(self):
-        self._delete_thumb()
-        super(Thumbnail, self).delete()
-
-    def __unicode__(self):
-        return self.thumb_file.name
 
 
 class License(models.Model):
@@ -351,10 +331,6 @@ class ResourceBase(PolymorphicModel, PermissionLevelMixin):
     detail_url = models.CharField(max_length=255, null=True, blank=True)
     rating = models.IntegerField(default=0, null=True)
 
-    def delete(self, *args, **kwargs):
-        resourcebase_pre_delete(self)
-        super(ResourceBase, self).delete(*args, **kwargs)
-
     def __unicode__(self):
         return self.title
 
@@ -535,13 +511,31 @@ class ResourceBase(PolymorphicModel, PermissionLevelMixin):
 
     def has_thumbnail(self):
         """Determine if the thumbnail object exists and an image exists"""
-        if not self.thumbnail_set.exists():
-            return False
+        return self.link_set.filter(name='Thumbnail').exists()
 
-        if not hasattr(self.thumbnail_set.get().thumb_file, 'path'):
-            return False
+    def save_thumbnail(self, filename, image):
+        thumb_folder = 'thumbs'
+        upload_path = os.path.join(settings.MEDIA_ROOT, thumb_folder)
+        if not os.path.exists(upload_path):
+            os.makedirs(upload_path)
+        url = os.path.join(settings.MEDIA_URL, thumb_folder, filename)
 
-        return os.path.exists(self.thumbnail_set.get().thumb_file.path)
+        with open(os.path.join(upload_path, filename), 'w') as f:
+            thumbnail = File(f)
+            thumbnail.write(image)
+
+        Link.objects.get_or_create(resource=self,
+                                   url=url,
+                                   defaults=dict(
+                                       name='Thumbnail',
+                                       extension='png',
+                                       mime='image/png',
+                                       link_type='image',
+                                   ))
+
+        ResourceBase.objects.filter(id=self.id).update(
+            thumbnail_url=url
+        )
 
     def set_missing_info(self):
         """Set default permissions and point of contacts.
@@ -640,8 +634,8 @@ class LinkManager(models.Manager):
     def original(self):
         return self.get_query_set().filter(link_type='original')
 
-    def geogit(self):
-        return self.get_queryset().filter(name__icontains='geogit')
+    def geogig(self):
+        return self.get_queryset().filter(name__icontains='geogig')
 
     def ows(self):
         return self.get_queryset().filter(link_type__in=['OGC:WMS', 'OGC:WFS', 'OGC:WCS'])
@@ -675,11 +669,6 @@ class Link(models.Model):
         return '%s link' % self.link_type
 
 
-def resourcebase_pre_delete(instance):
-    if instance.thumbnail_set.exists():
-        instance.thumbnail_set.get().thumb_file.delete()
-
-
 def resourcebase_post_save(instance, *args, **kwargs):
     """
     Used to fill any additional fields after the save.
@@ -689,6 +678,11 @@ def resourcebase_post_save(instance, *args, **kwargs):
         thumbnail_url=instance.get_thumbnail_url(),
         detail_url=instance.get_absolute_url())
     instance.set_missing_info()
+
+    # we need to remove stale links
+    for link in instance.link_set.all():
+        if settings.SITEURL not in link.url:
+            link.delete()
 
 
 def rating_post_save(instance, *args, **kwargs):

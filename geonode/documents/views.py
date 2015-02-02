@@ -20,6 +20,7 @@ from geonode.base.models import TopicCategory, ResourceBase
 from geonode.documents.models import Document
 from geonode.documents.forms import DocumentForm, DocumentCreateForm, DocumentReplaceForm
 from geonode.documents.models import IMGTYPES
+from geonode.utils import build_social_links
 
 ALLOWED_DOC_TYPES = settings.ALLOWED_DOCUMENT_TYPES
 
@@ -80,18 +81,23 @@ def document_detail(request, docid):
         except:
             related = ''
 
-        if request.user != document.owner:
+        # Update count for popularity ranking,
+        # but do not includes admins or resource owners
+        if request.user != document.owner and not request.user.is_superuser:
             Document.objects.filter(id=document.id).update(popular_count=F('popular_count') + 1)
+
+        context_dict = {
+            'permissions_json': _perms_info_json(document),
+            'resource': document,
+            'imgtypes': IMGTYPES,
+            'related': related}
+
+        if settings.SOCIAL_ORIGINS:
+            context_dict["social_links"] = build_social_links(request, document)
 
         return render_to_response(
             "documents/document_detail.html",
-            RequestContext(
-                request,
-                {
-                    'permissions_json': _perms_info_json(document),
-                    'resource': document,
-                    'imgtypes': IMGTYPES,
-                    'related': related}))
+            RequestContext(request, context_dict))
 
 
 def document_download(request, docid):

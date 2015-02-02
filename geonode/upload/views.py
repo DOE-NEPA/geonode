@@ -123,7 +123,7 @@ def _error_response(req, exception=None, errors=None, force_ajax=True):
     if req.is_ajax() or force_ajax:
         content_type = 'text/html' if not req.is_ajax() else None
         return json_response(exception=exception, errors=errors,
-                             content_type=content_type, status=500)
+                             content_type=content_type, status=400)
     # not sure if any responses will (ideally) ever be non-ajax
     if errors:
         exception = "<br>".join(errors)
@@ -269,8 +269,8 @@ def save_step_view(req, session):
             permissions=form.cleaned_data["permissions"],
             import_sld_file=sld,
             upload_type=base_file[0].file_type.code,
-            geogit=form.cleaned_data['geogit'],
-            geogit_store=form.cleaned_data['geogit_store'],
+            geogig=form.cleaned_data['geogig'],
+            geogig_store=form.cleaned_data['geogig_store'],
             time=form.cleaned_data['time']
         )
         return _next_step_response(req, upload_session, force_ajax=True)
@@ -484,7 +484,14 @@ def run_response(req, upload_session):
 
 
 def final_step_view(req, upload_session):
-    saved_layer = upload.final_step(upload_session, req.user)
+    try:
+        saved_layer = upload.final_step(upload_session, req.user)
+
+    except upload.LayerNotReady:
+        return json_response({'status': 'pending',
+                              'success': True,
+                              'redirect_to': '/upload/final'})
+
     # this response is different then all of the other views in the
     # upload as it does not return a response as a json object
     return json_response(
@@ -591,10 +598,18 @@ def view(req, step):
         # must be put back to update object in session
         if upload_session:
             if step == 'final':
-                # we're done with this session, wax it
-                Upload.objects.update_from_session(upload_session)
-                upload_session = None
-                del req.session[_SESSION_KEY]
+                delete_session = True
+                try:
+                    resp_js = json.loads(resp.content)
+                    delete_session = resp_js.get('status') != 'pending'
+                except:
+                    pass
+
+                if delete_session:
+                    # we're done with this session, wax it
+                    Upload.objects.update_from_session(upload_session)
+                    upload_session = None
+                    del req.session[_SESSION_KEY]
             else:
                 req.session[_SESSION_KEY] = upload_session
         elif _SESSION_KEY in req.session:

@@ -53,6 +53,8 @@
             <li id="nav_documents">
               <a href="{% url "document_browse" %}">{% trans "Documents" %}</a>
             </li>
+           {% block extra_tab %}
+           {% endblock %}
             <li id="nav_people">
               <a href="{% url "profile_browse" %}">{% trans "People" %}</a>
             </li>
@@ -130,7 +132,7 @@
             {% else %}
             <li>
               <a href="#" data-toggle="modal" data-target="#SigninModal" role="button" >
-                {% trans "Sign in" %} 
+                {% trans "Sign in" %}
 >>>>>>> 7ff73d185d129cbb1a2740e5e419620a31a751db
               </a>
             </li>
@@ -191,9 +193,6 @@
       </div>
     </footer>
     {% endblock footer %}
-
-<<<<<<< HEAD
-=======
 
     <!-- Modal must stay outside the navbar -->
     {% if not user.is_authenticated %}
@@ -271,7 +270,7 @@
     </div>
     {% endif %}
     <!-- End of Modal -->
-    
+
 >>>>>>> 7ff73d185d129cbb1a2740e5e419620a31a751db
     {% if DEBUG_STATIC %}
     <script src="{{ STATIC_URL }}lib/js/jquery.min.js"></script>

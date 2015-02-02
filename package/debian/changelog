@@ -1,3 +1,260 @@
+geonode (2.4.0+beta13) trusty; urgency=high
+
+  [ Paolo Pasquali ]
+  * [310a6c] Fix #1960
+
+  [ Simone Dalmasso ]
+  * [7737d4] disable html5 mode in explorer in search
+  * [284206] disable notification by default
+
+  [ Jeffrey Johnson ]
+  * [12c995] Dont use ^ in autocomplete (this means starts with)
+
+  [ Paolo Pasquali ]
+  * [666036] Add links to homepage facets. And some padding improvements. Fix #1901
+  * [ca486f] Remove text-center class from homepage
+
+  [ capooti ]
+  * [7a71de] Hack to fix #1932
+
+  [ Paolo Pasquali ]
+  * [881c43] Add some profile layout fixes
+
+  [ capooti ]
+  * [9fccf0] Removing stale links when updating layers. Fixes #1090
+  * [6818a9] Making flake8 happy
+
+  [ Simone Dalmasso ]
+  * [97493c] fixes #1888
+
+  [ Tyler Garner ]
+  * [e1c1ab] Include step to install `sphinx_rtd_theme` when building docs.
+
+  [ capooti ]
+  * [1b769b] Fixes #1966
+
+  [ Simone Dalmasso ]
+  * [84e8cd] obscure thumbnail urls
+
+  [ capooti ]
+  * [944446] Reading THEME_ACCOUNT_CONTACT_EMAIL in context processor
+
+  [ Paolo Pasquali ]
+  * [c2ec51] General minor layout improvements
+
+  [ Jeffrey Johnson ]
+  * [f0828e] Check if the store.type is None before checking its value
+
+  [ Paolo Pasquali ]
+  * [6a93e3] Fix form width
+
+  [ Simone Dalmasso ]
+  * [2dc741] add back the print middleware for private layers fixes #765
+
+  [ Jeffrey Johnson ]
+  * [c1c5cc] Delete geoservers store (deleting the postgis table) when doing layer replace (fixes #1860)
+
+  [ capooti ]
+  * [67f28d] Bumped geonode-avatar 2.1.4
+
+  [ Simone Dalmasso ]
+  * [5f1f81] add default configurable permissions for anonymous user
+
+  [ Jeffrey Johnson ]
+  * [6189f7] Add new logic to detect changing layer types (raster/vector) when replacing layers vs letting geonode handle this
+  * [06aac1] Use 400 error code vs 500
+
+  [ Simone Dalmasso ]
+
+ -- Simone Dalmasso <simone.dalmasso@gmail.com>  Mon, 02 Feb 2015 17:21:05 +0000
+
+geonode (2.4.0+beta12) trusty; urgency=high
+
+  [ state-hiu ]
+  * [ef373f] Initial support for Share with CKAN (HDX as prototype)
+  * [936b0b] Disable CKAN by default
+  * [51342f] PEP8 fixes
+
+  [ Tyler Garner ]
+  * [129000] Enable XFrameOptionsMiddleware for clickjacking prevention.
+
+  [ state-hiu ]
+  * [a069c7] Do not include admins in view counts
+  * [0e39c0] layout changes for group members and avatar change
+
+  [ Stefano Menegon ]
+  * [c20130] Fixed issue with non ASCII characters
+
+  [ state-hiu ]
+  * [6fc90a] Fix #1847; anonymoususer fix; layout fixes
+
+  [ Daniele Viganò ]
+  * [b2246b] Fix the README contained in the zip file created by a map download
+
+  [ Simone Dalmasso ]
+  * [e002a3] use link to docs in readme for installation devmode
+  * [67b61b] fix link
+
+  [ menegon ]
+  * [27057b] improved layer_acls performaces
+
+  [ John Jediny ]
+  * [c85974] Adding blank extra_tab block
+
+  [ menegon ]
+  * [edb815] PEP8 fixes
+  * [2fb7d8] used set operations - as suggested by @ischneider
+  * [f3385a] fixed test_layer_acls issue
+
+  [ Geode Team ]
+  * [4634b5] research user-group insensitive and exclude AnonymousUser
+  * [9fbd6b] fix pep8
+
+  [ state-hiu ]
+  * [76e43b] Fix dropdown; Prevent duplicate group members
+
+  [ Simone Dalmasso ]
+  * [a3472c] compile css
+
+  [ state-hiu ]
+  * [30b305] added documentation to settings.txt
+  * [2114cb] fixes fakepath issue on document upload
+  * [785a73] category links to search; more info button
+
+  [ Simone Dalmasso ]
+  * [94ebf1] simplify notifications
+
+ -- Simone Dalmasso <simone.dalmasso@gmail.com>  Mon, 02 Feb 2015 10:22:57 +0000
+
+geonode (2.4.0+beta11) trusty; urgency=high
+
+  [ state-hiu ]
+  * [153fdd] Social Origins List; SOCIAL_BUTTONS fallbacks to False
+  * [f941e2] PEP8 Fixes; Documented settings.SOCIAL_ORIGINS
+  * [a60b7a] Refractor.  Added function to utils.py
+
+  [ Jeffrey Johnson ]
+  * [cf24b5] Added John Jediny (nepanode) to contributors.
+  * [02f724] Adding slack config to travis.yml
+
+  [ George Silva ]
+  * [340d6e] Fix bug that causes paver_start to fail on windows.
+
+  [ Geode Team ]
+  * [bf2353] add perm choice for #1922
+  * [4e5c81] replace is_layer_list by is_layer
+
+  [ capooti ]
+  * [9e0b8d] This fixes #1908
+  * [9519d3] Oops, forgot about the display_order in previous commit
+  * [e74388] Default value for display order cannot be null
+  * [5a3d35] Added an integration test for set_attributes, used by updatelayers
+
+  [ Tyler Garner ]
+  * [65e191] Minor improvements to the `groups` tests.
+
+  [ state-hiu ]
+  * [e1ce41] Fix #1849
+  * [986a9d] Fix #1934
+  * [63726b] PEP8 Fix
+  * [1300c6] Activity Filters (All, Layers, Maps, Comments)
+  * [bcc714] PEP8 Fixes
+
+  [ Simone Dalmasso ]
+  * [e79ce7] add celery to debian dependencies
+
+ -- Simone Dalmasso <simone.dalmasso@gmail.com>  Fri, 23 Jan 2015 13:55:26 +0000
+
+geonode (2.4.0+beta10) trusty; urgency=high
+
+  [ Mila Frerichs ]
+  * [996276] Add foreground option to startup script to start django in foreground
+  * [889056] Add Dockerfile and fig for easier developement/deployment
+
+  [ Ariel Nunez ]
+
+ -- Ariel Nunez <ingenieroariel@gmail.com>  Thu, 15 Jan 2015 10:10:36 -0500
+
+geonode (2.4.0+beta9) trusty; urgency=high
+
+  [ Tom Kralidis ]
+  * [143a06] update pycsw docs ref [ci skip]
+
+  [ Tyler Garner ]
+  * [8bb675] Bump Django to 1.6.10.
+
+  [ Ariel Nunez ]
+
+ -- Ariel Nunez <ingenieroariel@gmail.com>  Thu, 15 Jan 2015 10:09:39 -0500
+
+geonode (2.4.0+beta8) trusty; urgency=high
+
+  [ Simone Dalmasso ]
+  * [c8f5f5] add initial thumbnail logic
+  * [b63a85] add thumbnail to map save
+  * [79d6d4] cleanup map thumbnails files on regen
+  * [63c5c4] formalize thumb name
+
+  [ Ariel Nunez ]
+  * [fe1e18] Fixed short version of account requested
+  * [c4cb6d] Renamed capital PNG to png in docs
+  * [fe5b5f] Renamed capital PNG to png in docs
+
+  [ Tom Kralidis ]
+  * [e62edb] add CSW bbox query test
+
+  [ Simone Dalmasso ]
+  * [b64467] simplify thumbnail management
+  * [1fef11] save layer only once
+  * [af42b6] fix tests and folder creation
+  * [227934] Save the remote thumbnail url on layer load
+  * [ae6eea] move the create logic in helpers
+  * [007573] make the http_client not tied to gs
+
+  [ Paolo Pasquali ]
+  * [608773] Change the profile dropdown in bootstrap modal
+
+  [ Tyler Garner ]
+  * [c13513] Return the user's full name in the resolve_user and layer_acls views.
+
+  [ Paolo Pasquali ]
+  * [52bf1d] Add links to profile page
+
+  [ Tyler Garner ]
+  * [f7f9c7] Update skip_unadvertised logic to not run when advertised is "false".
+
+  [ Ariel Núñez ]
+  * [12b3fb] Update ec2.py
+
+  [ Tyler Garner ]
+  * [5a89f6] Update the upload progress bar to use bootstrap 3 class names.  Fixes #1797.
+  * [595a8f] Bump django-forms-bootstrap to 3.0.1 for bootstrap 3 classes.
+  * [112222] Minor style improvements and code cleanup.
+  * [b1e95a] Fix autopep8 shenanigans in the url routes.
+  * [f1f783] Improve upload button styles.
+  * [e27326] Improve style of the attribute table on the layer metadata route.
+
+  [ George Silva ]
+  * [e00168] corrigindo algumas traduções.
+
+  [ Tyler Garner ]
+  * [9b82d7] Use client-side polling (instead of server-side) polling when using the importer upload.
+
+  [ menegon ]
+  * [8ab593] fixed the pluralization of translated strings
+
+  [ Tyler Garner ]
+  * [c38352] Fix a bug where clicking 'Clear' on the upload page would fail to clear the actual files.
+  * [b44281] Use a single paver task to execute all of the tests.
+  * [91a9c1] Fix a broken url on the upload layer page.
+  * [b4e47a] Rename GeoGit to GeoGig.
+  * [1000ca] Initial celery integration.
+  * [fb2973] Use an SLD's name instead of text from a name element when saving styles in GeoNode.
+
+  [ Simone Dalmasso ]
+
+ -- Simone Dalmasso <simone.dalmasso@gmail.com>  Wed, 14 Jan 2015 07:30:09 +0000
+
 geonode (2.4.0+beta7) trusty; urgency=high
 
   [ Ariel Nunez ]

@@ -266,7 +266,8 @@ def package(options):
         'start_django'])
 @cmdopts([
     ('bind=', 'b', 'Bind server to provided IP address and port number.'),
-    ('java_path=', 'j', 'Full path to java install for Windows')
+    ('java_path=', 'j', 'Full path to java install for Windows'),
+    ('foreground', 'f', 'Do not run in background but in foreground')
 ], share_with=['start_django', 'start_geoserver'])
 def start():
     """
@@ -311,7 +312,8 @@ def start_django():
     Start the GeoNode Django application
     """
     bind = options.get('bind', '')
-    sh('python manage.py runserver %s &' % bind)
+    foreground = '' if options.get('foreground', False) else '&'
+    sh('python manage.py runserver %s %s' % (bind, foreground))
 
 
 @cmdopts([
@@ -341,7 +343,13 @@ def start_geoserver(options):
     # prevents geonode security from initializing correctly otherwise
     with pushd(data_dir):
         javapath = "java"
-        loggernullpath = "/dev/null"
+        loggernullpath = os.devnull
+
+        # checking if our loggernullpath exists and if not, reset it to something manageable
+        if loggernullpath == "nul":
+            open("../../downloaded/null.txt", 'w+').close()
+            loggernullpath = "../../downloaded/null.txt"
+
         try:
             sh(('java -version'))
         except:
@@ -350,10 +358,6 @@ def start_geoserver(options):
                 sys.exit(1)
             # if there are spaces
             javapath = 'START /B "" "' + options['java_path'] + '"'
-            # cmd log file needs to exist in windows
-            # using folder from .gitignore
-            open("../../downloaded/null.txt", 'w+').close()
-            loggernullpath = "../../downloaded/null.txt"
 
         sh((
             '%(javapath)s -Xmx512m -XX:MaxPermSize=256m'
@@ -429,6 +433,16 @@ def test_integration(options):
     if not success:
         sys.exit(1)
 
+@task
+def run_tests():
+    """
+    Executes the entire test suite.
+    """
+    sh('python manage.py test geonode.tests.smoke')
+    call_task('test')
+    call_task('test_integration')
+    call_task('test_integration', options={'name': 'geonode.tests.csw'})
+    sh('flake8 geonode')
 
 @task
 @needs(['stop'])

@@ -35,6 +35,7 @@ from django.template.defaultfilters import slugify
 from django.forms.models import inlineformset_factory
 from django.db.models import F
 
+from geonode.tasks.deletion import delete_layer
 from geonode.services.models import Service
 from geonode.layers.forms import LayerForm, LayerUploadForm, NewLayerUploadForm, LayerAttributeForm
 from geonode.base.forms import CategoryForm
@@ -45,12 +46,16 @@ from geonode.base.models import TopicCategory
 from geonode.utils import default_map_config
 from geonode.utils import GXPLayer
 from geonode.utils import GXPMap
-from geonode.layers.utils import file_upload
+from geonode.layers.utils import file_upload, is_raster, is_vector
 from geonode.utils import resolve_object, llbbox_to_mercator
 from geonode.people.forms import ProfileForm, PocForm
 from geonode.security.views import _perms_info_json
 from geonode.documents.models import get_related_documents
+from geonode.utils import build_social_links
 
+if 'geonode.geoserver' in settings.INSTALLED_APPS:
+
+    from geonode.geoserver.helpers import _render_thumbnail
 
 logger = logging.getLogger("geonode.layers.views")
 
@@ -167,7 +172,7 @@ def layer_upload(request, template='upload/layer_upload.html'):
         if out['success']:
             status_code = 200
         else:
-            status_code = 500
+            status_code = 400
         return HttpResponse(
             json.dumps(out),
             mimetype='application/json',
@@ -212,8 +217,9 @@ def layer_detail(request, layername, template='layers/layer_detail.html'):
             ows_url=layer.ows_url,
             layer_params=json.dumps(config))
 
-    # Update count for popularity ranking.
-    if request.user != layer.owner:
+    # Update count for popularity ranking,
+    # but do not includes admins or resource owners
+    if request.user != layer.owner and not request.user.is_superuser:
         Layer.objects.filter(
             id=layer.id).update(popular_count=F('popular_count') + 1)
 
@@ -248,6 +254,9 @@ def layer_detail(request, layername, template='layers/layer_detail.html'):
             links = layer.link_set.download().filter(
                 name__in=settings.DOWNLOAD_FORMATS_RASTER)
         context_dict["links"] = links
+
+    if settings.SOCIAL_ORIGINS:
+        context_dict["social_links"] = build_social_links(request, layer)
 
     return render_to_response(template, RequestContext(request, context_dict))
 
@@ -335,8 +344,10 @@ def layer_metadata(request, layername, template='layers/layer_metadata.html'):
             the_layer.metadata_author = new_author
             the_layer.keywords.clear()
             the_layer.keywords.add(*new_keywords)
-            the_layer.category = new_category
-            the_layer.save()
+            Layer.objects.filter(id=the_layer.id).update(
+                category=new_category
+                )
+
             return HttpResponseRedirect(
                 reverse(
                     'layer_detail',
@@ -415,21 +426,27 @@ def layer_replace(request, layername, template='layers/layer_replace.html'):
         if form.is_valid():
             try:
                 tempdir, base_file = form.write_files()
-                saved_layer = file_upload(
-                    base_file,
-                    name=layer.name,
-                    user=request.user,
-                    overwrite=True,
-                    charset=form.cleaned_data["charset"],
-                )
+                if layer.is_vector() and is_raster(base_file):
+                    out['success'] = False
+                    out['errors'] = _("You are attempting to replace a vector layer with a raster.")
+                elif layer.is_vector() == False and is_vector(base_file):
+                    out['success'] = False
+                    out['errors'] = _("You are attempting to replace a raster layer with a vector.")
+                else:
+                    saved_layer = file_upload(
+                        base_file,
+                        name=layer.name,
+                        user=request.user,
+                        overwrite=True,
+                        charset=form.cleaned_data["charset"],
+                    )
+                    out['success'] = True
+                    out['url'] = reverse(
+                        'layer_detail', args=[
+                            saved_layer.service_typename])
             except Exception as e:
                 out['success'] = False
                 out['errors'] = str(e)
-            else:
-                out['success'] = True
-                out['url'] = reverse(
-                    'layer_detail', args=[
-                        saved_layer.service_typename])
             finally:
                 if tempdir is not None:
                     shutil.rmtree(tempdir)
@@ -444,7 +461,7 @@ def layer_replace(request, layername, template='layers/layer_replace.html'):
         if out['success']:
             status_code = 200
         else:
-            status_code = 500
+            status_code = 400
         return HttpResponse(
             json.dumps(out),
             mimetype='application/json',
@@ -464,7 +481,27 @@ def layer_remove(request, layername, template='layers/layer_remove.html'):
             "layer": layer
         }))
     if (request.method == 'POST'):
-        layer.delete()
+        delete_layer.delay(object_id=layer.id)
         return HttpResponseRedirect(reverse("layer_browse"))
     else:
         return HttpResponse("Not allowed", status=403)
+
+
+def layer_thumbnail(request, layername):
+    if request.method == 'POST':
+        layer_obj = _resolve_layer(request, layername)
+        try:
+            image = _render_thumbnail(request.body)
+
+            if not image:
+                return
+            filename = "layer-%s-thumb.png" % layer_obj.uuid
+            layer_obj.save_thumbnail(filename, image)
+
+            return HttpResponse('Thumbnail saved')
+        except:
+            return HttpResponse(
+                content='error saving thumbnail',
+                status=500,
+                mimetype='text/plain'
+            )

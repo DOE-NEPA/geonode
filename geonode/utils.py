@@ -539,3 +539,35 @@ def num_decode(s):
     for c in s:
         n = n * BASE + ALPHABET_REVERSE[c]
     return n
+
+
+def format_urls(a, values):
+    b = []
+    for i in a:
+        j = i.copy()
+        try:
+            j['url'] = unicode(j['url']).format(**values)
+        except KeyError:
+            j['url'] = None
+        b.append(j)
+    return b
+
+
+def build_abstract(resourcebase, url=None, includeURL=True):
+    if resourcebase.abstract and url and includeURL:
+        return u"{abstract} -- [{url}]({url})".format(abstract=resourcebase.abstract, url=url)
+    else:
+        return resourcebase.abstract
+
+
+def build_social_links(request, resourcebase):
+    social_url = "{protocol}://{host}{path}".format(
+        protocol=("https" if request.is_secure() else "http"),
+        host=request.get_host(),
+        path=request.get_full_path())
+    return format_urls(
+        settings.SOCIAL_ORIGINS,
+        {
+            'name': resourcebase.title,
+            'abstract': build_abstract(resourcebase, url=social_url, includeURL=True),
+            'url': social_url})
