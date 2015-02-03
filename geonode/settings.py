@@ -516,6 +516,7 @@ OGC_SERVER = {
         'WMST_ENABLED': False,
         'BACKEND_WRITE_ENABLED': True,
         'WPS_ENABLED': True,
+        'LOG_FILE': '/usr/share/geoserver/data/logs/geoserver.log',
         # Set to name of database in DATABASES dictionary to enable
         'DATASTORE': '',  # 'datastore',
         'TIMEOUT': 10  # number of seconds to allow for HTTP requests
@@ -819,6 +820,7 @@ NOTIFICATION_QUEUE_ALL = False
 
 BROKER_URL = "django://"
 CELERY_ALWAYS_EAGER = True
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 CELERY_IGNORE_RESULT = True
 CELERY_SEND_EVENTS = False
 CELERY_RESULT_BACKEND = None
